@@ -49,7 +49,7 @@ UserSchema.methods.toJSON = function () {
 }
 
 //Here arrow function dont work
-UserSchema.methods.generateAuthToken = function ( ) {
+UserSchema.methods.generateAuthToken = function () {
 	var user = this;
 	var access =  'auth';
 	var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
@@ -59,6 +59,26 @@ UserSchema.methods.generateAuthToken = function ( ) {
 	return user.save().then(() => {
 		return token;
 	});
+};
+
+UserSchema.statics.findByToken = function (token) {
+
+	//upperCase, since is a module method
+	var User = this;
+	var decoded;
+
+	try{
+		decoded = ywt.verify(token, 'abc123');
+	} catch(e) {
+		return  Promise.reject('test');
+	}
+
+	return User.findeOne({
+		_id: decoded._id,
+		'tokens.token': token,
+		'tokens.access': 'auth'
+	});
+
 };
 
 var User = mongoose.model('User', UserSchema);

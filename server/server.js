@@ -114,12 +114,15 @@ app.post('/users', (req, res) =>{
   //another way to create a user object, body will have e-mail and password field.
   var user = new User(body);
 
-  user.save().then((user) =>{
-    res.send(user);
-  }, (e) => {
-    res.status(400).send(e);
+  user.save().then(() =>{
+    return user.generateAuthToken();
+  }).then((token) =>{
+    res.header('x-auth', token).send(user);
+  }).catch((e) => {
+    res.status(400).send();
   });
 });
+
 
 
 

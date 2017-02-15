@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');	
+const bcrypt = require('bcryptjs');
 
 //store all the schema of the user
 var UserSchema = new mongoose.Schema({
@@ -44,7 +45,7 @@ UserSchema.methods.toJSON = function () {
 	//take a mongoose variable and transforme it into a Object
 	var userObject = user.toObject();
 
-	return _.pick(userObject, ['_id', 'email']);
+	return _.pick(userObject, ['_id', 'email', 'password']);
 
 }
 
@@ -80,6 +81,23 @@ UserSchema.statics.findByToken = function (token) {
 	});
 
 };
+
+//run this save code before any other event.
+UserSchema.pre('save', function(next) {
+	var user = this;
+	if(user.isModified('password')) {
+		// hash the new password and added to the ddbb
+		bcrypt.genSalt(10, (err, salt) => {
+			bcrypt.hash(user.password, salt, (err, hash) => {
+				user.password = hash;
+				next();
+			});
+		});
+	} else {
+		next();
+	}
+});
+
 
 var User = mongoose.model('User', UserSchema);
 

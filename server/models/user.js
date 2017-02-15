@@ -27,11 +27,11 @@ var UserSchema = new mongoose.Schema({
 	tokens: [{
 		access: {
 			type: String,
-			require: true
+			required: true
 		},
 		token: {
 			type: String,
-			require: true
+			required: true
 
 		}
 	}]
@@ -45,17 +45,17 @@ UserSchema.methods.toJSON = function () {
 	//take a mongoose variable and transforme it into a Object
 	var userObject = user.toObject();
 
-	return _.pick(userObject, ['_id', 'email', 'password']);
+	return _.pick(userObject, ['_id', 'email']);
 
 }
 
 //Here arrow function dont work
 UserSchema.methods.generateAuthToken = function () {
 	var user = this;
-	var access =  'auth';
-	var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
+	var access = 'auth';
+  	var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
 
-	user.tokens.push({access, token});
+  	user.tokens.push({access, token});
 
 	return user.save().then(() => {
 		return token;
@@ -69,13 +69,13 @@ UserSchema.statics.findByToken = function (token) {
 	var decoded;
 
 	try{
-		decoded = ywt.verify(token, 'abc123');
+		decoded = jwt.verify(token, 'abc123');
 	} catch(e) {
-		return  Promise.reject('test');
+		return  Promise.reject();
 	}
 
-	return User.findeOne({
-		_id: decoded._id,
+	return User.findOne({
+		'_id': decoded._id,
 		'tokens.token': token,
 		'tokens.access': 'auth'
 	});
@@ -85,6 +85,7 @@ UserSchema.statics.findByToken = function (token) {
 //run this save code before any other event.
 UserSchema.pre('save', function(next) {
 	var user = this;
+
 	if(user.isModified('password')) {
 		// hash the new password and added to the ddbb
 		bcrypt.genSalt(10, (err, salt) => {
@@ -102,6 +103,4 @@ UserSchema.pre('save', function(next) {
 
 var User = mongoose.model('User', UserSchema);
 
-module.exports = {
-	User
-};
+module.exports = {User};

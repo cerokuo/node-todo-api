@@ -53,9 +53,9 @@ UserSchema.methods.toJSON = function () {
 UserSchema.methods.generateAuthToken = function () {
 	var user = this;
 	var access = 'auth';
-  	var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
+	var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
 
-  	user.tokens.push({access, token});
+	user.tokens.push({access, token});
 
 	return user.save().then(() => {
 		return token;
@@ -79,6 +79,31 @@ UserSchema.statics.findByToken = function (token) {
 		'tokens.token': token,
 		'tokens.access': 'auth'
 	});
+
+};
+
+//statics because is a method called on the model.
+UserSchema.statics.findByCredentials = function (email, password) {
+	var User = this;
+
+	//if we dont findOne user, we use "then" to return what we want
+ 	return User.findOne({email}).then((user) =>{
+ 		if(!user) {
+ 			//will throw the catch of the method that called findByCredentials
+ 			return Promise.reject();
+ 		}
+
+ 		return new Promise((resolve, reject) => {
+ 			bcrypt.compare(password, user.password, (err, res) => {
+ 				if(res) {
+ 					resolve(user);
+ 				} else {
+ 					reject();
+ 				}
+
+ 			});
+ 		});
+	})
 
 };
 

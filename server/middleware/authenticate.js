@@ -6,8 +6,8 @@ var authenticate = (req, res, next) =>{
 
  var token = req.header('x-auth');
 
-  User.findByToken(token).then((user) =>{
-    if(!user) {
+ User.findByToken(token).then((user) =>{
+  if(!user) {
       //better than res.status(401).send()
       return Promise.reject();
     }

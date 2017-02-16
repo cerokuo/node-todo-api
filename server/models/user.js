@@ -125,6 +125,20 @@ UserSchema.pre('save', function(next) {
 	}
 });
 
+//Instance method, that is why the "methods" word in the header
+UserSchema.methods.removeToken = function (token) {
+ 	var user = this
+
+ 	return user.update({
+ 		$pull : {
+ 			tokens: {
+ 				token: token
+ 			}
+ 		}
+ 	})
+
+};
+
 
 var User = mongoose.model('User', UserSchema);
 

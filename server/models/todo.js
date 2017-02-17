@@ -14,6 +14,11 @@ var Todo = mongoose.model('Todo', {
 	completedAt: {
 		type: Number,
 		default: null
+	},
+	_creator: {
+		// this property allow us to get info from the User Schema.
+		type: mongoose.Schema.Types.ObjectId,
+		required: true
 	}
 });
 
